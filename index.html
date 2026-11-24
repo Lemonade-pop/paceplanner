@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Pace Planner / 每周节奏规划器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #09090b; color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
+    .phone { width: 100%; max-width: 390px; min-height: 100vh; background: var(--phone-bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 24px rgba(0,0,0,0.3); transition: background-color 0.25s; }
+    /* ARKNIGHTS THEME: Light blue, grey, white, black */
+    .phone.theme-arknights {
+      --phone-bg: #f8fafc; --header-bg: #ffffff; --header-border: #cbd5e1; --header-title: #09090b;
+      --card-bg: #ffffff; --card-border: #e2e8f0; --text-main: #09090b; --text-sub: #64748b;
+      --accent: #0284c7; --accent-glow: #38bdf8; --btn-primary-bg: #09090b; --btn-primary-text: #ffffff;
+      --bar-normal: #0284c7; --bar-over: #ef4444; --step-active-bg: #09090b; --step-active-text: #38bdf8;
+      --tag-good-bg: #e0f2fe; --tag-good-text: #0369a1; --tag-okay-bg: #f1f5f9; --tag-okay-text: #475569; --tag-low-bg: #fee2e2; --tag-low-text: #991b1b;
+      --lang-bg: #e2e8f0; --lang-active: #09090b; --lang-text: #64748b;
+    }
+    /* NARUTO MOBILE THEME: Red, orange, yellow, black */
+    .phone.theme-naruto {
+      --phone-bg: #fffbf5; --header-bg: #18181b; --header-border: #ea580c; --header-title: #fbbf24;
+      --card-bg: #ffffff; --card-border: #fed7aa; --text-main: #18181b; --text-sub: #78716c;
+      --accent: #ea580c; --accent-glow: #f59e0b; --btn-primary-bg: #ea580c; --btn-primary-text: #ffffff;
+      --bar-normal: #f59e0b; --bar-over: #dc2626; --step-active-bg: #ea580c; --step-active-text: #ffffff;
+      --tag-good-bg: #fef3c7; --tag-good-text: #b45309; --tag-okay-bg: #ffedd5; --tag-okay-text: #c2410c; --tag-low-bg: #fee2e2; --tag-low-text: #991b1b;
+      --lang-bg: #27272a; --lang-active: #ea580c; --lang-text: #d6d3d1;
+    }
+    header { background: var(--header-bg); border-bottom: 2px solid var(--header-border); padding: 12px 14px 10px; position: sticky; top: 0; z-index: 30; transition: all 0.25s; }
+    .top-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .app-title-text { font-size: 14px; font-weight: 700; color: var(--header-title); }
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .badge { font-size: 10px; font-weight: 600; background: rgba(125,125,125,0.15); color: var(--text-sub); border: 1px solid var(--card-border); border-radius: 999px; padding: 2px 7px; }
+    .lang-switch { display: flex; background: var(--lang-bg); border-radius: 6px; padding: 2px; gap: 2px; }
+    .lang-btn { border: none; background: transparent; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; cursor: pointer; color: var(--lang-text); transition: all 0.15s; }
+    .lang-btn.active { background: var(--lang-active); color: #fff; }
+    .stepper { display: flex; gap: 6px; }
+    .step-item { flex: 1; text-align: center; padding: 6px 2px; font-size: 11px; font-weight: 600; border-radius: 6px; background: rgba(125,125,125,0.1); color: var(--text-sub); }
+    .step-item.active { background: var(--step-active-bg); color: var(--step-active-text); }
+    .step-item.done { background: rgba(125,125,125,0.2); color: var(--text-main); }
+    main { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+    .screen { display: none; flex-direction: column; gap: 14px; }
+    .screen.active { display: flex; }
+    h2 { font-size: 19px; font-weight: 700; color: var(--text-main); }
+    .subtext { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; }
+    .card.skipped-style { opacity: 0.6; background: rgba(125,125,125,0.05); border-style: dashed; }
+    .slider-head { display: flex; justify-content: space-between; align-items: center; }
+    .slider-val { font-size: 16px; font-weight: 700; color: var(--accent); }
+    input[type=range] { width: 100%; height: 8px; border-radius: 4px; background: #e2e8f0; outline: none; cursor: pointer; }
+    .slider-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sub); }
+    .pinned-tracker { position: sticky; top: 66px; z-index: 20; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 10px; }
+    .bar-labels { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+    .bar-track { width: 100%; height: 8px; background: rgba(125,125,125,0.15); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0%; background: var(--bar-normal); transition: width 0.25s, background-color 0.25s; }
+    .bar-fill.over { background: var(--bar-over) !important; }
+    .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; }
+    .tag-neutral { background: rgba(125,125,125,0.12); color: var(--text-sub); }
+    .tag-good { background: var(--tag-good-bg); color: var(--tag-good-text); }
+    .tag-okay { background: var(--tag-okay-bg); color: var(--tag-okay-text); }
+    .tag-low { background: var(--tag-low-bg); color: var(--tag-low-text); }
+    .item-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+    .input-cell { display: flex; flex-direction: column; gap: 3px; }
+    .input-label { font-size: 11px; font-weight: 600; color: var(--text-sub); }
+    .num-input { width: 100%; height: 38px; border: 1px solid var(--card-border); border-radius: 6px; padding: 6px 8px; font-size: 13px; font-weight: 600; background: #fff; outline: none; color: var(--text-main); }
+    .num-input:focus { border-color: var(--accent); }
+    .toggle-group { display: flex; background: rgba(125,125,125,0.12); border-radius: 8px; padding: 3px; gap: 4px; }
+    .toggle-btn { flex: 1; min-height: 42px; border: none; background: transparent; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; color: var(--text-sub); transition: all 0.15s; }
+    .toggle-btn.active-plan { background: var(--btn-primary-bg); color: var(--btn-primary-text); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+    .toggle-btn.active-skip { background: #fff; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .card-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 12px; font-weight: 500; padding: 8px 10px; border-radius: 6px; line-height: 1.35; }
+    .btn { min-height: 48px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; }
+    .btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
+    .btn-secondary { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--card-border); }
+    .status-banner { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .status-banner.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-banner.warning { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+<div id="appPhone" class="phone theme-arknights">
+  <header>
+    <div class="top-meta">
+      <span id="txt-appTitle" class="app-title-text">Weekly Pace Planner</span>
+      <div class="header-right">
+        <div class="lang-switch">
+          <button type="button" id="btn-lang-en" class="lang-btn active" onclick="setLang('en')">EN</button>
+          <button type="button" id="btn-lang-zh" class="lang-btn" onclick="setLang('zh')">中文</button>
+        </div>
+        <span id="txt-protoBadge" class="badge">Sample data</span>
+      </div>
+    </div>
+    <nav class="stepper" aria-label="Steps">
+      <div id="step-1" class="step-item active">1. Set pace</div>
+      <div id="step-2" class="step-item">2. This week</div>
+      <div id="step-3" class="step-item">3. Your plan</div>
+    </nav>
+  </header>
+  <main>
+    <!-- SCREEN 1 -->
+    <section id="screen-1" class="screen active">
+      <div><h2 id="txt-s1Title">Set your pace</h2><p id="txt-s1Sub" class="subtext">Select game and adjust boundaries to stay in control of your time and spending.</p></div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="txt-gameLabel" style="font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Game</span>
+          <button type="button" id="txt-resetSample1" onclick="resetToSample()" style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; cursor:pointer;">Reset to sample</button>
+        </div>
+        <div class="toggle-group">
+          <button type="button" id="g-ak" class="toggle-btn active-plan" onclick="switchGame('arknights')">Arknights</button>
+          <button type="button" id="g-nr" class="toggle-btn" onclick="switchGame('naruto')">Naruto Mobile (火影忍者手游)</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><label for="rulesNote" id="txt-rulesLabel" style="font-size:13px; font-weight:600;">Rules note (editable)</label><span id="txt-tapEdit" style="font-size:11px; color:var(--text-sub);">Tap to edit</span></div>
+        <textarea id="rulesNote" rows="2" style="width:100%; font-size:12px; border:1px solid var(--card-border); border-radius:6px; padding:6px 8px; resize:none; font-family:inherit; color:var(--text-main); background:#fff;" oninput="onRulesInput(this.value)"></textarea>
+      </div>
+      <div class="card">
+        <div class="slider-head"><label for="costPullInput" style="font-size:13px; font-weight:600;"><span id="txt-costPullText">Cost per pull</span> (<span id="currLabel">Orundum</span>)</label><input type="number" id="costPullInput" min="1" class="num-input" style="width:110px; height:36px; text-align:right;" oninput="onCostPullInput(this.value)"></div>
+      </div>
+      <div class="card">
+        <div class="slider-head"><label for="timeSlider" id="txt-timeSliderLabel" style="font-size:14px; font-weight:600;">Time per week</label><span id="timeVal" class="slider-val">3 hours</span></div>
+        <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="3" oninput="onBudgetChange()"><div class="slider-ticks"><span>0h</span><span>5h</span><span>10h</span></div>
+      </div>
+      <div class="card">
+        <div class="slider-head"><label for="spendSlider" id="txt-spendSliderLabel" style="font-size:14px; font-weight:600;">Spend per week</label><span id="spendVal" class="slider-val">S$20</span></div>
+        <input type="range" id="spendSlider" min="0" max="100" step="5" value="20" oninput="onBudgetChange()"><div class="slider-ticks"><span>S$0</span><span>S$50</span><span>S$100</span></div>
+      </div>
+      <button type="button" id="btn-seeThisWeek" class="btn btn-primary" onclick="setScreen(2)">See this week</button>
+    </section>
+
+    <!-- SCREEN 2 -->
+    <section id="screen-2" class="screen">
+      <div class="pinned-tracker">
+        <div><div class="bar-labels"><span id="txt-trackerTimeLabel">Time planned</span><span id="timeTrackerLabel">0m / 3h</span></div><div class="bar-track"><div id="timeFill" class="bar-fill"></div></div></div>
+        <div><div class="bar-labels"><span id="txt-trackerSpendLabel">Spend planned</span><span id="spendTrackerLabel">S$0 / S$20</span></div><div class="bar-track"><div id="spendFill" class="bar-fill"></div></div></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <div><h2 id="txt-s2Title">This week</h2><p id="txt-s2Sub" class="subtext">All numbers editable; returns recalculate live.</p></div>
+        <button type="button" id="txt-resetSample2" onclick="resetToSample()" style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; cursor:pointer;">Reset to sample</button>
+      </div>
+      <div id="items-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <button type="button" id="btn-buildPlan" class="btn btn-primary" onclick="setScreen(3)">Build my plan</button>
+    </section>
+
+    <!-- SCREEN 3 -->
+    <section id="screen-3" class="screen">
+      <div><h2 id="txt-s3Title">Your plan</h2><p id="txt-s3Sub" class="subtext">Summary of what you committed to and what you skipped on purpose.</p></div>
+      <div id="statusBanner" class="status-banner"></div>
+      <div class="summary-grid">
+        <div class="summary-box"><div id="txt-s3TimeBud" class="subtext">Time vs Budget</div><div id="summaryTime" style="font-size:16px; font-weight:700; margin-top:4px;"></div></div>
+        <div class="summary-box"><div id="txt-s3SpendBud" class="subtext">Spend vs Budget</div><div id="summarySpend" style="font-size:16px; font-weight:700; margin-top:4px;"></div></div>
+      </div>
+      <div><h3 id="txt-plannedHead" style="font-size:14px; margin-bottom:8px;">Planned items</h3><div id="planned-list" style="display:flex; flex-direction:column; gap:8px;"></div></div>
+      <div><h3 id="txt-skippedHead" style="font-size:14px; margin-bottom:8px;">Skipped items</h3><div id="skipped-list" style="display:flex; flex-direction:column; gap:8px;"></div></div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        <button type="button" id="btn-editPlan" class="btn btn-secondary" onclick="setScreen(2)">Edit</button>
+        <button type="button" id="btn-resetSample3" class="btn btn-secondary" style="color:var(--accent);" onclick="resetToSample()">Reset to sample</button>
+        <button type="button" id="btn-startOver" class="btn btn-secondary" style="color:#dc2626;" onclick="resetAll()">Start over</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  const i18n = {
+    en: {
+      appTitle: 'Weekly Pace Planner', protoBadge: 'Sample data', step1: '1. Set pace', step2: '2. This week', step3: '3. Your plan',
+      s1Title: 'Set your pace', s1Sub: 'Select game and adjust boundaries to stay in control of your time and spending.',
+      game: 'Game', resetSample: 'Reset to sample', rulesLabel: 'Rules note (editable)', tapEdit: 'Tap to edit',
+      costPull: 'Cost per pull', timePerWeek: 'Time per week', spendPerWeek: 'Spend per week', seeThisWeek: 'See this week',
+      s2Title: 'This week', s2Sub: 'All numbers editable; returns recalculate live.', timePlanned: 'Time planned', spendPlanned: 'Spend planned',
+      overTag: '(Over)', minutes: 'Minutes', reward: 'Reward', rate: 'Rate:', minPull: 'min/pull', guarPulls: 'Guarantee pulls',
+      estTopup: 'Est. Top-up (S$)', planIt: 'Plan it', skip: 'Skip', goodRet: 'Good return', okayRet: 'Okay', lowRet: 'Low return',
+      buildPlan: 'Build my plan', s3Title: 'Your plan', s3Sub: 'Summary of what you committed to and what you skipped on purpose.',
+      withinPace: "You're within your pace this week", overBudget: 'Over budget:', timeVsBud: 'Time vs Budget', spendVsBud: 'Spend vs Budget',
+      plannedItems: 'Planned items', skippedItems: 'Skipped items', skippedPurpose: 'Skipped on purpose', noPlanned: 'No items planned.',
+      noSkipped: 'No items skipped.', edit: 'Edit', startOver: 'Start over',
+      overSpendWarn: (s) => `Over your spend budget by S$${s} - skip, or save for the next banner.`,
+      overTimeWarn: (t) => `Over your time budget by ${t} - consider skipping.`,
+      hoursUnit: (h) => `${h} hour${h === 1 ? '' : 's'}`, phEnter: 'enter your own'
+    },
+    zh: {
+      appTitle: '每周节奏规划器', protoBadge: '样例数据', step1: '1. 设定节奏', step2: '2. 本周活动', step3: '3. 你的规划',
+      s1Title: '设定你的节奏', s1Sub: '选择游戏并设定每周时间与支出上限，掌握游戏节奏。',
+      game: '游戏', resetSample: '恢复默认样例', rulesLabel: '规则说明（可编辑）', tapEdit: '点击编辑',
+      costPull: '单抽消耗', timePerWeek: '每周时间预算', spendPerWeek: '每周支出预算', seeThisWeek: '查看本周活动',
+      s2Title: '本周活动', s2Sub: '所有数值均可编辑，性价比实时计算。', timePlanned: '已规划时间', spendPlanned: '已规划支出',
+      overTag: '(超支)', minutes: '时长 (分钟)', reward: '奖励', rate: '效率:', minPull: '分钟/抽', guarPulls: '保底抽数',
+      estTopup: '预估充值 (S$)', planIt: '加入规划', skip: '放弃', goodRet: '高性价比', okayRet: '一般', lowRet: '低性价比',
+      buildPlan: '生成我的规划', s3Title: '你的规划', s3Sub: '本周决定的重点活动与主动放弃的项目一览。',
+      withinPace: '本周在你的节奏预算范围内', overBudget: '超出预算:', timeVsBud: '时间 vs 预算', spendVsBud: '支出 vs 预算',
+      plannedItems: '已规划项目', skippedItems: '已放弃项目', skippedPurpose: '主动放弃', noPlanned: '暂未规划任何项目。',
+      noSkipped: '未放弃任何项目。', edit: '返回修改', startOver: '重新开始',
+      overSpendWarn: (s) => `超出支出预算 S$${s} — 建议放弃或留给下个卡池。`,
+      overTimeWarn: (t) => `超出时间预算 ${t} — 建议考虑放弃此项。`,
+      hoursUnit: (h) => `${h} 小时`, phEnter: '输入数值'
+    }
+  };
+
+  const sampleData = {
+    arknights: {
+      currency: { en: 'Orundum', zh: '合成玉' }, costPerPull: 600,
+      rules: { en: '600 Orundum per pull; limited banners can be guaranteed after 300 pulls (check in-game)', zh: '单抽 600 合成玉；限定寻访 300 抽保底（请以游戏内为准）' },
+      items: [
+        { id: 'ak_daily', title: { en: 'Daily missions (sample)', zh: '日常任务 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
+        { id: 'ak_weekly', title: { en: 'Weekly missions (sample)', zh: '周常任务 (样例)' }, type: { en: 'Task', zh: '周常' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Resets weekly', zh: '每周重置' }, planned: false },
+        { id: 'ak_event', title: { en: 'Current event (sample)', zh: '当前活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
+        { id: 'ak_banner_ltd', title: { en: 'Limited banner (sample)', zh: '限定寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 300, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
+        { id: 'ak_banner_std', title: { en: 'Standard banner (sample)', zh: '常驻寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
+      ]
+    },
+    naruto: {
+      currency: { en: 'coins', zh: '金币' }, costPerPull: 170,
+      rules: { en: 'Rules change often - fill in your own', zh: '招募规则多变 - 请按实际情况填写' },
+      items: [
+        { id: 'nr_guild', title: { en: 'Guild Fortress', zh: '要塞争霸' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 25, reward: 170, spend: 0, ends: { en: 'Ends Saturday', zh: '周六结束' }, note: { en: 'This is the only real figure; everything else is sample.', zh: '此项为真实数据，其余均为样例。' }, planned: false },
+        { id: 'nr_daily', title: { en: 'Daily tasks (sample)', zh: '每日活跃 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: 15, reward: 170, spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
+        { id: 'nr_event', title: { en: 'Limited event (sample)', zh: '限时活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 30, reward: 510, spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
+        { id: 'nr_banner_ltd', title: { en: 'Limited banner "Sample Character A" (sample)', zh: '限定招募 "高招忍者A" (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 90, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
+        { id: 'nr_banner_std', title: { en: 'Standard banner (sample)', zh: '普通招募 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
+      ]
+    }
+  };
+
+  const state = {
+    lang: 'en', currentGame: 'arknights', timeBudgetH: 3.0, spendBudget: 20,
+    gameData: JSON.parse(JSON.stringify(sampleData))
+  };
+
+  function fmtTime(mins) {
+    const h = Math.floor(mins / 60), m = Math.round(mins % 60), isZh = state.lang === 'zh';
+    if (h > 0 && m > 0) return isZh ? `${h}小时 ${m}分` : `${h}h ${m}m`;
+    if (h > 0) return isZh ? `${h}小时` : `${h}h`;
+    return isZh ? `${m}分钟` : `${m}m`;
+  }
+
+  function getReturnTag(item, costPerPull) {
+    if (!item.isEvent || item.reward === '' || item.min === '' || Number(item.reward) <= 0 || Number(item.min) <= 0 || Number(costPerPull) <= 0) return null;
+    const pulls = Number(item.reward) / Number(costPerPull), rate = Math.round((Number(item.min) / pulls) * 10) / 10, t = i18n[state.lang];
+    if (rate <= 12) return { text: t.goodRet, cls: 'tag-good', rate };
+    if (rate <= 20) return { text: t.okayRet, cls: 'tag-okay', rate };
+    return { text: t.lowRet, cls: 'tag-low', rate };
+  }
+
+  function setLang(l) {
+    state.lang = l;
+    document.getElementById('btn-lang-en').className = `lang-btn ${l === 'en' ? 'active' : ''}`;
+    document.getElementById('btn-lang-zh').className = `lang-btn ${l === 'zh' ? 'active' : ''}`;
+    applyTranslations();
+    syncGameInputs();
+  }
+
+  function applyTranslations() {
+    const t = i18n[state.lang];
+    document.getElementById('txt-appTitle').textContent = t.appTitle;
+    document.getElementById('txt-protoBadge').textContent = t.protoBadge;
+    document.getElementById('step-1').textContent = t.step1;
+    document.getElementById('step-2').textContent = t.step2;
+    document.getElementById('step-3').textContent = t.step3;
+    document.getElementById('txt-s1Title').textContent = t.s1Title;
+    document.getElementById('txt-s1Sub').textContent = t.s1Sub;
+    document.getElementById('txt-gameLabel').textContent = t.game;
+    document.getElementById('txt-resetSample1').textContent = t.resetSample;
+    document.getElementById('txt-rulesLabel').textContent = t.rulesLabel;
+    document.getElementById('txt-tapEdit').textContent = t.tapEdit;
+    document.getElementById('txt-timeSliderLabel').textContent = t.timePerWeek;
+    document.getElementById('txt-spendSliderLabel').textContent = t.spendPerWeek;
+    document.getElementById('btn-seeThisWeek').textContent = t.seeThisWeek;
+    document.getElementById('txt-trackerTimeLabel').textContent = t.timePlanned;
+    document.getElementById('txt-trackerSpendLabel').textContent = t.spendPlanned;
+    document.getElementById('txt-s2Title').textContent = t.s2Title;
+    document.getElementById('txt-s2Sub').textContent = t.s2Sub;
+    document.getElementById('txt-resetSample2').textContent = t.resetSample;
+    document.getElementById('btn-buildPlan').textContent = t.buildPlan;
+    document.getElementById('txt-s3Title').textContent = t.s3Title;
+    document.getElementById('txt-s3Sub').textContent = t.s3Sub;
+    document.getElementById('txt-s3TimeBud').textContent = t.timeVsBud;
+    document.getElementById('txt-s3SpendBud').textContent = t.spendVsBud;
+    document.getElementById('txt-plannedHead').textContent = t.plannedItems;
+    document.getElementById('txt-skippedHead').textContent = t.skippedItems;
+    document.getElementById('btn-editPlan').textContent = t.edit;
+    document.getElementById('btn-resetSample3').textContent = t.resetSample;
+    document.getElementById('btn-startOver').textContent = t.startOver;
+    document.getElementById('timeVal').textContent = t.hoursUnit(state.timeBudgetH);
+  }
+
+  function onBudgetChange() {
+    state.timeBudgetH = parseFloat(document.getElementById('timeSlider').value);
+    state.spendBudget = parseInt(document.getElementById('spendSlider').value, 10);
+    document.getElementById('timeVal').textContent = i18n[state.lang].hoursUnit(state.timeBudgetH);
+    document.getElementById('spendVal').textContent = `S$${state.spendBudget}`;
+    updateCalculations();
+  }
+
+  function onRulesInput(val) { state.gameData[state.currentGame].rules[state.lang] = val; }
+  function onCostPullInput(val) {
+    const num = Number(val);
+    state.gameData[state.currentGame].costPerPull = num > 0 ? num : 1;
+    updateCalculations();
+  }
+
+  function onItemInput(id, field, val) {
+    const cur = state.gameData[state.currentGame];
+    const item = cur.items.find(i => i.id === id);
+    if (item) { item[field] = val === '' ? '' : Number(val); updateCalculations(); }
+  }
+
+  function togglePlan(id, planVal) {
+    const cur = state.gameData[state.currentGame];
+    const item = cur.items.find(i => i.id === id);
+    if (item) {
+      item.planned = planVal;
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.classList.toggle('skipped-style', !planVal);
+        const pBtn = card.querySelector('.btn-plan'), sBtn = card.querySelector('.btn-skip');
+        if (pBtn && sBtn) {
+          pBtn.className = `toggle-btn btn-plan ${planVal ? 'active-plan' : ''}`;
+          sBtn.className = `toggle-btn btn-skip ${!planVal ? 'active-skip' : ''}`;
+        }
+      }
+      updateCalculations();
+    }
+  }
+
+  function updateCalculations() {
+    const cur = state.gameData[state.currentGame], t = i18n[state.lang];
+    const planned = cur.items.filter(i => i.planned);
+    const totM = planned.reduce((s, i) => s + (Number(i.min) || 0), 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
+    const budM = state.timeBudgetH * 60, overT = totM > budM, overS = totS > state.spendBudget;
+
+    const tFill = document.getElementById('timeFill');
+    if (tFill) {
+      tFill.style.width = `${Math.min(budM > 0 ? (totM / budM) * 100 : 0, 100)}%`;
+      tFill.className = `bar-fill ${overT ? 'over' : ''}`;
+      document.getElementById('timeTrackerLabel').textContent = `${fmtTime(totM)} / ${fmtTime(budM)}${overT ? ' ' + t.overTag : ''}`;
+    }
+
+    const sFill = document.getElementById('spendFill');
+    if (sFill) {
+      sFill.style.width = `${Math.min(state.spendBudget > 0 ? (totS / state.spendBudget) * 100 : 0, 100)}%`;
+      sFill.className = `bar-fill ${overS ? 'over' : ''}`;
+      document.getElementById('spendTrackerLabel').textContent = `S$${totS} / S$${state.spendBudget}${overS ? ' ' + t.overTag : ''}`;
+    }
+
+    cur.items.forEach(item => {
+      const tagEl = document.getElementById(`tag-${item.id}`), rateEl = document.getElementById(`rate-${item.id}`);
+      const tag = getReturnTag(item, cur.costPerPull);
+      if (tagEl) tagEl.innerHTML = tag ? `<span class="tag ${tag.cls}">${tag.text}</span>` : '';
+      if (rateEl) rateEl.textContent = tag ? `${tag.rate} ${t.minPull}` : '—';
+
+      const warnEl = document.getElementById(`warn-${item.id}`);
+      if (warnEl) {
+        let warnText = '';
+        if (item.planned) {
+          if (overS && Number(item.spend) > 0) warnText += `<div>${t.overSpendWarn(totS - state.spendBudget)}</div>`;
+          if (overT && Number(item.min) > 0) warnText += `<div>${t.overTimeWarn(fmtTime(totM - budM))}</div>`;
+        }
+        warnEl.innerHTML = warnText ? `<div class="card-warning" style="margin-top:6px;">${warnText}</div>` : '';
+      }
+    });
+  }
+
+  function switchGame(gameKey) {
+    state.currentGame = gameKey;
+    document.getElementById('appPhone').className = `phone theme-${gameKey}`;
+    document.getElementById('g-ak').className = `toggle-btn ${gameKey === 'arknights' ? 'active-plan' : ''}`;
+    document.getElementById('g-nr').className = `toggle-btn ${gameKey === 'naruto' ? 'active-plan' : ''}`;
+    syncGameInputs();
+  }
+
+  function resetToSample() {
+    state.gameData[state.currentGame] = JSON.parse(JSON.stringify(sampleData[state.currentGame]));
+    syncGameInputs();
+  }
+
+  function syncGameInputs() {
+    const cur = state.gameData[state.currentGame], l = state.lang, t = i18n[l];
+    document.getElementById('appPhone').className = `phone theme-${state.currentGame}`;
+    document.getElementById('txt-costPullText').textContent = t.costPull;
+    document.getElementById('currLabel').textContent = cur.currency[l];
+    document.getElementById('rulesNote').value = cur.rules[l] || cur.rules['en'];
+    document.getElementById('costPullInput').value = cur.costPerPull;
+    renderScreen2();
+  }
+
+  function renderScreen2() {
+    const cur = state.gameData[state.currentGame], l = state.lang, t = i18n[l];
+    const list = document.getElementById('items-list');
+    list.innerHTML = cur.items.map(item => {
+      const tag = getReturnTag(item, cur.costPerPull);
+      const title = item.title[l] || item.title['en'], type = item.type[l] || item.type['en'], ends = item.ends[l] || item.ends['en'];
+      const note = item.note ? (item.note[l] || item.note['en']) : null;
+
+      const inputsHtml = item.isEvent ? `
+        <div class="inputs-grid">
+          <label class="input-cell"><span class="input-label">${t.minutes}</span><input type="number" min="0" class="num-input" value="${item.min}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'min', this.value)"></label>
+          <label class="input-cell"><span class="input-label">${t.reward} (${cur.currency[l]})</span><input type="number" min="0" class="num-input" value="${item.reward}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'reward', this.value)"></label>
+        </div>
+        <div style="font-size:12px; color:var(--text-sub); margin-top:2px;">${t.rate} <span id="rate-${item.id}" style="font-weight:600; color:var(--text-main);">${tag ? tag.rate + ' ' + t.minPull : '—'}</span></div>
+      ` : `
+        <div class="inputs-grid">
+          <label class="input-cell"><span class="input-label">${t.guarPulls}</span><input type="number" min="0" class="num-input" value="${item.pulls}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'pulls', this.value)"></label>
+          <label class="input-cell"><span class="input-label">${t.estTopup}</span><input type="number" min="0" class="num-input" value="${item.spend}" placeholder="0" oninput="onItemInput('${item.id}', 'spend', this.value)"></label>
+        </div>
+      `;
+
+      return `
+        <div id="card-${item.id}" class="card ${item.planned ? '' : 'skipped-style'}">
+          <div>
+            <div style="font-size:15px; font-weight:700; color:var(--text-main);">${title}</div>
+            <div class="item-badges"><span class="tag tag-neutral">${type}</span><span class="tag tag-neutral">${ends}</span><span id="tag-${item.id}">${tag ? `<span class="tag ${tag.cls}">${tag.text}</span>` : ''}</span></div>
+          </div>
+          ${inputsHtml}
+          ${note ? `<div style="font-size:11px; font-style:italic; color:var(--text-sub);">* ${note}</div>` : ''}
+          <div class="toggle-group" style="margin-top:4px;">
+            <button type="button" class="toggle-btn btn-plan ${item.planned ? 'active-plan' : ''}" onclick="togglePlan('${item.id}', true)">${t.planIt}</button>
+            <button type="button" class="toggle-btn btn-skip ${!item.planned ? 'active-skip' : ''}" onclick="togglePlan('${item.id}', false)">${t.skip}</button>
+          </div>
+          <div id="warn-${item.id}"></div>
+        </div>`;
+    }).join('');
+    updateCalculations();
+  }
+
+  function renderScreen3() {
+    const cur = state.gameData[state.currentGame], l = state.lang, t = i18n[l];
+    const planned = cur.items.filter(i => i.planned), skipped = cur.items.filter(i => !i.planned);
+    const totM = planned.reduce((s, i) => s + (Number(i.min) || 0), 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
+    const budM = state.timeBudgetH * 60, ok = totM <= budM && totS <= state.spendBudget;
+
+    const banner = document.getElementById('statusBanner');
+    banner.className = `status-banner ${ok ? 'success' : 'warning'}`;
+    banner.innerHTML = ok ? `<span>✓</span> <span>${t.withinPace}</span>`
+      : `<span>⚠️</span> <span>${t.overBudget} ${totM > budM ? fmtTime(totM - budM) + ' ' : ''}${totS > state.spendBudget ? 'S$' + (totS - state.spendBudget) : ''}</span>`;
+
+    document.getElementById('summaryTime').textContent = `${fmtTime(totM)} / ${fmtTime(budM)}`;
+    document.getElementById('summarySpend').textContent = `S$${totS} / S$${state.spendBudget}`;
+
+    document.getElementById('planned-list').innerHTML = planned.length ? planned.map(i => {
+      const title = i.title[l] || i.title['en'];
+      return `<div class="card" style="padding:10px 12px; gap:4px;">
+        <div style="font-weight:700; font-size:14px; color:var(--text-main);">${title}</div>
+        <div style="font-size:12px; color:var(--text-sub);">${Number(i.min) > 0 ? `${i.min} ${l==='zh'?'分钟':'min'}` : ''}${Number(i.min) > 0 && Number(i.spend) > 0 ? ' • ' : ''}${Number(i.spend) > 0 ? `S$${i.spend}` : ''}</div>
+      </div>`;
+    }).join('') : `<div class="card subtext" style="text-align:center;">${t.noPlanned}</div>`;
+
+    document.getElementById('skipped-list').innerHTML = skipped.length ? skipped.map(i => {
+      const title = i.title[l] || i.title['en'];
+      return `<div class="card skipped-style" style="padding:10px 12px; display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:var(--text-sub);">${title}</div><span class="tag tag-neutral">${t.skippedPurpose}</span>
+      </div>`;
+    }).join('') : `<div class="card subtext" style="text-align:center;">${t.noSkipped}</div>`;
+  }
+
+  function setScreen(num) {
+    [1, 2, 3].forEach(n => {
+      document.getElementById(`screen-${n}`).classList.toggle('active', n === num);
+      const ind = document.getElementById(`step-${n}`);
+      ind.classList.remove('active', 'done');
+      if (n === num) ind.classList.add('active'); else if (n < num) ind.classList.add('done');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (num === 2) renderScreen2();
+    if (num === 3) renderScreen3();
+  }
+
+  function resetAll() {
+    state.timeBudgetH = 3.0; state.spendBudget = 20;
+    document.getElementById('timeSlider').value = 3; document.getElementById('spendSlider').value = 20;
+    document.getElementById('spendVal').textContent = 'S$20';
+    state.gameData = JSON.parse(JSON.stringify(sampleData));
+    applyTranslations();
+    switchGame('arknights'); setScreen(1);
+  }
+
+  applyTranslations();
+  onBudgetChange();
+  syncGameInputs();
+</script>
+</body>
+</html>
