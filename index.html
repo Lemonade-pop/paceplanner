@@ -171,15 +171,19 @@
       game: 'Game', resetSample: 'Reset to sample', rulesLabel: 'Rules note (editable)', tapEdit: 'Tap to edit',
       costPull: 'Cost per pull', timePerWeek: 'Time per week', spendPerWeek: 'Spend per week', seeThisWeek: 'See this week',
       s2Title: 'This week', s2Sub: 'All numbers editable; returns recalculate live.', timePlanned: 'Time planned', spendPlanned: 'Spend planned',
-      overTag: '(Over)', minutes: 'Minutes', reward: 'Reward', rate: 'Rate:', minPull: 'min/pull', guarPulls: 'Guarantee pulls',
-      estTopup: 'Est. Top-up (S$)', planIt: 'Plan it', skip: 'Skip', goodRet: 'Good return', okayRet: 'Okay', lowRet: 'Low return',
-      buildPlan: 'Build my plan', s3Title: 'Your plan', s3Sub: 'Summary of what you committed to and what you skipped on purpose.',
+      overTag: '(Over)', minDay: 'Minutes per play day', rewardDay: 'Reward per play day', daysWeek: 'Days per week',
+      rewardWeek: 'Reward per week', weeklyNote: 'No extra time - done while playing daily', noExtraTime: 'No extra time',
+      rate: 'Rate:', minPull: 'min/pull', guarPulls: 'Guarantee pulls', estTopup: 'Est. Top-up (S$)', planIt: 'Plan it', skip: 'Skip',
+      goodRet: 'Good return', okayRet: 'Okay', lowRet: 'Low return', buildPlan: 'Build my plan',
+      s3Title: 'Your plan', s3Sub: 'Summary of what you committed to and what you skipped on purpose.',
       withinPace: "You're within your pace this week", overBudget: 'Over budget:', timeVsBud: 'Time vs Budget', spendVsBud: 'Spend vs Budget',
       plannedItems: 'Planned items', skippedItems: 'Skipped items', skippedPurpose: 'Skipped on purpose', noPlanned: 'No items planned.',
       noSkipped: 'No items skipped.', edit: 'Edit', startOver: 'Start over',
       overSpendWarn: (s) => `Over your spend budget by S$${s} - skip, or save for the next banner.`,
       overTimeWarn: (t) => `Over your time budget by ${t} - consider skipping.`,
-      hoursUnit: (h) => `${h} hour${h === 1 ? '' : 's'}`, phEnter: 'enter your own'
+      hoursUnit: (h) => `${h} hour${h === 1 ? '' : 's'}`, phEnter: 'enter your own',
+      weeklyRes: (m, r, c) => `= ${m.toLocaleString()} min and ${r.toLocaleString()} ${c} per week`,
+      bannerRes: (p, s) => `= ${p.toLocaleString()} pulls guarantee, S$${s.toLocaleString()} est. top-up`
     },
     zh: {
       appTitle: '每周节奏规划器', protoBadge: '样例数据', step1: '1. 设定节奏', step2: '2. 本周活动', step3: '3. 你的规划',
@@ -187,15 +191,19 @@
       game: '游戏', resetSample: '恢复默认样例', rulesLabel: '规则说明（可编辑）', tapEdit: '点击编辑',
       costPull: '单抽消耗', timePerWeek: '每周时间预算', spendPerWeek: '每周支出预算', seeThisWeek: '查看本周活动',
       s2Title: '本周活动', s2Sub: '所有数值均可编辑，性价比实时计算。', timePlanned: '已规划时间', spendPlanned: '已规划支出',
-      overTag: '(超支)', minutes: '时长 (分钟)', reward: '奖励', rate: '效率:', minPull: '分钟/抽', guarPulls: '保底抽数',
-      estTopup: '预估充值 (S$)', planIt: '加入规划', skip: '放弃', goodRet: '高性价比', okayRet: '一般', lowRet: '低性价比',
-      buildPlan: '生成我的规划', s3Title: '你的规划', s3Sub: '本周决定的重点活动与主动放弃的项目一览。',
+      overTag: '(超支)', minDay: '每次游玩时长 (分钟)', rewardDay: '每次奖励', daysWeek: '每周天数 (0-7)',
+      rewardWeek: '每周奖励', weeklyNote: '无额外耗时 — 日常游玩时顺带完成', noExtraTime: '无额外耗时',
+      rate: '效率:', minPull: '分钟/抽', guarPulls: '保底抽数', estTopup: '预估充值 (S$)', planIt: '加入规划', skip: '放弃',
+      goodRet: '高性价比', okayRet: '一般', lowRet: '低性价比', buildPlan: '生成我的规划',
+      s3Title: '你的规划', s3Sub: '本周决定的重点活动与主动放弃的项目一览。',
       withinPace: '本周在你的节奏预算范围内', overBudget: '超出预算:', timeVsBud: '时间 vs 预算', spendVsBud: '支出 vs 预算',
       plannedItems: '已规划项目', skippedItems: '已放弃项目', skippedPurpose: '主动放弃', noPlanned: '暂未规划任何项目。',
       noSkipped: '未放弃任何项目。', edit: '返回修改', startOver: '重新开始',
       overSpendWarn: (s) => `超出支出预算 S$${s} — 建议放弃或留给下个卡池。`,
       overTimeWarn: (t) => `超出时间预算 ${t} — 建议考虑放弃此项。`,
-      hoursUnit: (h) => `${h} 小时`, phEnter: '输入数值'
+      hoursUnit: (h) => `${h} 小时`, phEnter: '输入数值',
+      weeklyRes: (m, r, c) => `= 每周 ${m.toLocaleString()} 分钟，${r.toLocaleString()} ${c}`,
+      bannerRes: (p, s) => `= ${p.toLocaleString()} 抽保底，预估充值 S$${s.toLocaleString()}`
     }
   };
 
@@ -204,22 +212,23 @@
       currency: { en: 'Orundum', zh: '合成玉' }, costPerPull: 600,
       rules: { en: '600 Orundum per pull; limited banners can be guaranteed after 300 pulls (check in-game)', zh: '单抽 600 合成玉；限定寻访 300 抽保底（请以游戏内为准）' },
       items: [
-        { id: 'ak_daily', title: { en: 'Daily missions (sample)', zh: '日常任务 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
-        { id: 'ak_weekly', title: { en: 'Weekly missions (sample)', zh: '周常任务 (样例)' }, type: { en: 'Task', zh: '周常' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Resets weekly', zh: '每周重置' }, planned: false },
-        { id: 'ak_event', title: { en: 'Current event (sample)', zh: '当前活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: '', reward: '', spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
-        { id: 'ak_banner_ltd', title: { en: 'Limited banner (sample)', zh: '限定寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 300, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
-        { id: 'ak_banner_std', title: { en: 'Standard banner (sample)', zh: '常驻寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
+        { id: 'ak_daily', title: { en: 'Daily missions (sample)', zh: '日常任务 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: '', reward: '', days: 7, spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
+        { id: 'ak_weekly', title: { en: 'Weekly missions (sample)', zh: '周常任务 (样例)' }, type: { en: 'Task', zh: '周常' }, isEvent: true, isWeekly: true, reward: '', spend: 0, ends: { en: 'Resets weekly', zh: '每周重置' }, planned: false },
+        { id: 'ak_event', title: { en: 'Current event (sample)', zh: '当前活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: '', reward: '', days: 7, spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
+        { id: 'ak_banner_ltd', title: { en: 'Limited banner (sample)', zh: '限定寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, pulls: 300, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
+        { id: 'ak_banner_std', title: { en: 'Standard banner (sample)', zh: '常驻寻访 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
       ]
     },
     naruto: {
       currency: { en: 'coins', zh: '金币' }, costPerPull: 170,
       rules: { en: 'Rules change often - fill in your own', zh: '招募规则多变 - 请按实际情况填写' },
       items: [
-        { id: 'nr_guild', title: { en: 'Guild Fortress', zh: '要塞争霸' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 25, reward: 170, spend: 0, ends: { en: 'Ends Saturday', zh: '周六结束' }, note: { en: 'This is the only real figure; everything else is sample.', zh: '此项为真实数据，其余均为样例。' }, planned: false },
-        { id: 'nr_daily', title: { en: 'Daily tasks (sample)', zh: '每日活跃 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: 15, reward: 170, spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
-        { id: 'nr_event', title: { en: 'Limited event (sample)', zh: '限时活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 30, reward: 510, spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
-        { id: 'nr_banner_ltd', title: { en: 'Limited banner "Sample Character A" (sample)', zh: '限定招募 "高招忍者A" (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 90, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
-        { id: 'nr_banner_std', title: { en: 'Standard banner (sample)', zh: '普通招募 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, min: 0, reward: 0, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
+        { id: 'nr_guild', title: { en: 'Guild Fortress', zh: '要塞争霸' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 25, reward: 170, days: 2, spend: 0, ends: { en: 'Wed & Sat', zh: '周三、周六' }, note: { en: 'This is the only real figure; everything else is sample.', zh: '此项为真实数据，其余均为样例。' }, planned: false },
+        { id: 'nr_daily', title: { en: 'Daily tasks (sample)', zh: '每日活跃 (样例)' }, type: { en: 'Task', zh: '日常' }, isEvent: true, min: 15, reward: 170, days: 7, spend: 0, ends: { en: 'Resets daily', zh: '每日重置' }, planned: false },
+        { id: 'nr_weekly', title: { en: 'Weekly missions (sample)', zh: '周常任务 (样例)' }, type: { en: 'Task', zh: '周常' }, isEvent: true, isWeekly: true, reward: '', spend: 0, ends: { en: 'Resets weekly', zh: '每周重置' }, planned: false },
+        { id: 'nr_event', title: { en: 'Limited event (sample)', zh: '限时活动 (样例)' }, type: { en: 'Event', zh: '活动' }, isEvent: true, min: 30, reward: 510, days: 7, spend: 0, ends: { en: 'Ends in 3 days', zh: '3天后结束' }, planned: false },
+        { id: 'nr_banner_ltd', title: { en: 'Limited banner "Sample Character A" (sample)', zh: '限定招募 "高招忍者A" (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, pulls: 90, spend: 35, ends: { en: 'Ends in 9 days', zh: '9天后结束' }, planned: false },
+        { id: 'nr_banner_std', title: { en: 'Standard banner (sample)', zh: '普通招募 (样例)' }, type: { en: 'Banner', zh: '卡池' }, isEvent: false, pulls: 20, spend: 0, ends: { en: 'Permanent', zh: '常驻' }, planned: false }
       ]
     }
   };
@@ -236,9 +245,20 @@
     return isZh ? `${m}分钟` : `${m}m`;
   }
 
+  function getWeeklyTotals(item) {
+    if (item.isWeekly) return { wMin: 0, wReward: item.reward === '' ? 0 : Math.max(0, Number(item.reward) || 0) };
+    if (!item.isEvent) return { wMin: 0, wReward: 0 };
+    const d = item.days === '' ? 0 : Math.max(0, Math.min(7, Math.trunc(Number(item.days) || 0)));
+    return { wMin: Math.max(0, Number(item.min) || 0) * d, wReward: Math.max(0, Number(item.reward) || 0) * d };
+  }
+
   function getReturnTag(item, costPerPull) {
-    if (!item.isEvent || item.reward === '' || item.min === '' || Number(item.reward) <= 0 || Number(item.min) <= 0 || Number(costPerPull) <= 0) return null;
-    const pulls = Number(item.reward) / Number(costPerPull), rate = Math.round((Number(item.min) / pulls) * 10) / 10, t = i18n[state.lang];
+    const t = i18n[state.lang];
+    if (item.isWeekly) return { text: t.noExtraTime, cls: 'tag-good', rate: 0 };
+    if (!item.isEvent) return null;
+    const { wMin, wReward } = getWeeklyTotals(item);
+    if (wReward <= 0 || wMin <= 0 || Number(costPerPull) <= 0) return null;
+    const pulls = wReward / Number(costPerPull), rate = Math.round((wMin / pulls) * 10) / 10;
     if (rate <= 12) return { text: t.goodRet, cls: 'tag-good', rate };
     if (rate <= 20) return { text: t.okayRet, cls: 'tag-okay', rate };
     return { text: t.lowRet, cls: 'tag-low', rate };
@@ -301,10 +321,22 @@
     updateCalculations();
   }
 
-  function onItemInput(id, field, val) {
+  function onItemInput(id, field, val, el) {
     const cur = state.gameData[state.currentGame];
     const item = cur.items.find(i => i.id === id);
-    if (item) { item[field] = val === '' ? '' : Number(val); updateCalculations(); }
+    if (!item) return;
+    if (val === '') {
+      item[field] = '';
+    } else if (field === 'days') {
+      let d = Math.trunc(Number(val));
+      if (isNaN(d) || d < 0) d = 0;
+      if (d > 7) d = 7;
+      item.days = d;
+      if (el && String(el.value) !== String(d)) el.value = d;
+    } else {
+      item[field] = Number(val);
+    }
+    updateCalculations();
   }
 
   function togglePlan(id, planVal) {
@@ -326,9 +358,9 @@
   }
 
   function updateCalculations() {
-    const cur = state.gameData[state.currentGame], t = i18n[state.lang];
+    const cur = state.gameData[state.currentGame], l = state.lang, t = i18n[l];
     const planned = cur.items.filter(i => i.planned);
-    const totM = planned.reduce((s, i) => s + (Number(i.min) || 0), 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
+    const totM = planned.reduce((s, i) => s + getWeeklyTotals(i).wMin, 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
     const budM = state.timeBudgetH * 60, overT = totM > budM, overS = totS > state.spendBudget;
 
     const tFill = document.getElementById('timeFill');
@@ -346,17 +378,19 @@
     }
 
     cur.items.forEach(item => {
-      const tagEl = document.getElementById(`tag-${item.id}`), rateEl = document.getElementById(`rate-${item.id}`);
+      const { wMin, wReward } = getWeeklyTotals(item);
+      const tagEl = document.getElementById(`tag-${item.id}`), rateEl = document.getElementById(`rate-${item.id}`), wresEl = document.getElementById(`wres-${item.id}`);
       const tag = getReturnTag(item, cur.costPerPull);
       if (tagEl) tagEl.innerHTML = tag ? `<span class="tag ${tag.cls}">${tag.text}</span>` : '';
       if (rateEl) rateEl.textContent = tag ? `${tag.rate} ${t.minPull}` : '—';
+      if (wresEl) wresEl.textContent = item.isEvent ? t.weeklyRes(wMin, wReward, cur.currency[l]) : t.bannerRes(Number(item.pulls) || 0, Number(item.spend) || 0);
 
       const warnEl = document.getElementById(`warn-${item.id}`);
       if (warnEl) {
         let warnText = '';
         if (item.planned) {
           if (overS && Number(item.spend) > 0) warnText += `<div>${t.overSpendWarn(totS - state.spendBudget)}</div>`;
-          if (overT && Number(item.min) > 0) warnText += `<div>${t.overTimeWarn(fmtTime(totM - budM))}</div>`;
+          if (overT && wMin > 0) warnText += `<div>${t.overTimeWarn(fmtTime(totM - budM))}</div>`;
         }
         warnEl.innerHTML = warnText ? `<div class="card-warning" style="margin-top:6px;">${warnText}</div>` : '';
       }
@@ -394,17 +428,26 @@
       const title = item.title[l] || item.title['en'], type = item.type[l] || item.type['en'], ends = item.ends[l] || item.ends['en'];
       const note = item.note ? (item.note[l] || item.note['en']) : null;
 
-      const inputsHtml = item.isEvent ? `
+      const inputsHtml = item.isWeekly ? `
+        <div style="font-size:12px; color:var(--text-sub);">${t.weeklyNote}</div>
         <div class="inputs-grid">
-          <label class="input-cell"><span class="input-label">${t.minutes}</span><input type="number" min="0" class="num-input" value="${item.min}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'min', this.value)"></label>
-          <label class="input-cell"><span class="input-label">${t.reward} (${cur.currency[l]})</span><input type="number" min="0" class="num-input" value="${item.reward}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'reward', this.value)"></label>
+          <label class="input-cell"><span class="input-label">${t.rewardWeek} (${cur.currency[l]})</span><input type="number" min="0" class="num-input" value="${item.reward}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'reward', this.value, this)"></label>
+        </div>
+        <div id="wres-${item.id}" style="font-size:11px; color:var(--text-sub);"></div>
+      ` : item.isEvent ? `
+        <div class="inputs-grid">
+          <label class="input-cell"><span class="input-label">${t.minDay}</span><input type="number" min="0" class="num-input" value="${item.min}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'min', this.value, this)"></label>
+          <label class="input-cell"><span class="input-label">${t.rewardDay} (${cur.currency[l]})</span><input type="number" min="0" class="num-input" value="${item.reward}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'reward', this.value, this)"></label>
+          <label class="input-cell"><span class="input-label">${t.daysWeek}</span><input type="number" min="0" max="7" step="1" class="num-input" value="${item.days}" placeholder="0-7" oninput="onItemInput('${item.id}', 'days', this.value, this)"></label>
         </div>
         <div style="font-size:12px; color:var(--text-sub); margin-top:2px;">${t.rate} <span id="rate-${item.id}" style="font-weight:600; color:var(--text-main);">${tag ? tag.rate + ' ' + t.minPull : '—'}</span></div>
+        <div id="wres-${item.id}" style="font-size:11px; color:var(--text-sub);"></div>
       ` : `
         <div class="inputs-grid">
-          <label class="input-cell"><span class="input-label">${t.guarPulls}</span><input type="number" min="0" class="num-input" value="${item.pulls}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'pulls', this.value)"></label>
-          <label class="input-cell"><span class="input-label">${t.estTopup}</span><input type="number" min="0" class="num-input" value="${item.spend}" placeholder="0" oninput="onItemInput('${item.id}', 'spend', this.value)"></label>
+          <label class="input-cell"><span class="input-label">${t.guarPulls}</span><input type="number" min="0" class="num-input" value="${item.pulls}" placeholder="${t.phEnter}" oninput="onItemInput('${item.id}', 'pulls', this.value, this)"></label>
+          <label class="input-cell"><span class="input-label">${t.estTopup}</span><input type="number" min="0" class="num-input" value="${item.spend}" placeholder="0" oninput="onItemInput('${item.id}', 'spend', this.value, this)"></label>
         </div>
+        <div id="wres-${item.id}" style="font-size:11px; color:var(--text-sub);"></div>
       `;
 
       return `
@@ -428,7 +471,7 @@
   function renderScreen3() {
     const cur = state.gameData[state.currentGame], l = state.lang, t = i18n[l];
     const planned = cur.items.filter(i => i.planned), skipped = cur.items.filter(i => !i.planned);
-    const totM = planned.reduce((s, i) => s + (Number(i.min) || 0), 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
+    const totM = planned.reduce((s, i) => s + getWeeklyTotals(i).wMin, 0), totS = planned.reduce((s, i) => s + (Number(i.spend) || 0), 0);
     const budM = state.timeBudgetH * 60, ok = totM <= budM && totS <= state.spendBudget;
 
     const banner = document.getElementById('statusBanner');
@@ -440,10 +483,14 @@
     document.getElementById('summarySpend').textContent = `S$${totS} / S$${state.spendBudget}`;
 
     document.getElementById('planned-list').innerHTML = planned.length ? planned.map(i => {
-      const title = i.title[l] || i.title['en'];
+      const title = i.title[l] || i.title['en'], { wMin, wReward } = getWeeklyTotals(i);
+      const parts = [];
+      if (wMin > 0) parts.push(`${wMin.toLocaleString()} ${l === 'zh' ? '分钟' : 'min'}`);
+      if (wReward > 0) parts.push(`${wReward.toLocaleString()} ${cur.currency[l]}`);
+      if (Number(i.spend) > 0) parts.push(`S$${i.spend}`);
       return `<div class="card" style="padding:10px 12px; gap:4px;">
         <div style="font-weight:700; font-size:14px; color:var(--text-main);">${title}</div>
-        <div style="font-size:12px; color:var(--text-sub);">${Number(i.min) > 0 ? `${i.min} ${l==='zh'?'分钟':'min'}` : ''}${Number(i.min) > 0 && Number(i.spend) > 0 ? ' • ' : ''}${Number(i.spend) > 0 ? `S$${i.spend}` : ''}</div>
+        <div style="font-size:12px; color:var(--text-sub);">${parts.join(' • ')}</div>
       </div>`;
     }).join('') : `<div class="card subtext" style="text-align:center;">${t.noPlanned}</div>`;
 
